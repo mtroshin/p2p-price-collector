@@ -3,7 +3,7 @@ import typing as t
 from time import sleep
 import re
 
-from bs4 import BeautifulSoup
+
 
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
@@ -13,9 +13,9 @@ from app.collector.base import Collector, Order
 
 def check_exists_by_xpath(browser, xpath):
     try:
-        browser.find_element(By.XPATH, xpath)
+            browser.find_element(By.XPATH, xpath)
     except NoSuchElementException:
-        return False
+            return False
     return True
 
 def check_exists_class(browser, classs):
@@ -44,19 +44,21 @@ class HuobiPriceCollector(Collector):
         sleep(5)
 
         stay = 1
-        more = 1
+
         fist = 0
 
         while (stay >= 0):
 
             """ Считывание страницы"""
             get_source = self.__browser.page_source
-            soup = BeautifulSoup(get_source, 'lxml')
+
 
             """Поиск лимитов, цен и имен"""
-            limits = soup.findAll('div', class_='limit')
-            prices = soup.findAll('div', class_='width210 price font-green average mr-40')
-            names = soup.findAll('h3', class_='font14')
+            limits = self.__browser.find_elements(By.CLASS_NAME, 'limit')
+            prices = self.__browser.find_elements(By.CLASS_NAME, 'price')
+            names = self.__browser.find_elements(By.CLASS_NAME, 'font14')
+            q = len(names) - 3
+            del names[:-q]
 
             for limit, price, name in zip(limits, prices, names):
                 groups = re.search(r'((\d\,?\.?)+)-((\d\,?\.?)+)', limit.text)
@@ -69,26 +71,13 @@ class HuobiPriceCollector(Collector):
 
             """Переключение страницы"""
 
-            if (check_exists_class(self.__browser, "ivu-page-disabled")):
-                stay = stay - 1
-                more = more - 1
-                fist = 1
-
-            if ((check_exists_by_xpath(self.__browser, '/html/body/div[2]/div[1]/div[2]/div/div/div[3]/div[2]/div[4]/div/ul/li[8]'))):
-                next_page = self.__browser.find_element(By.XPATH, '/html/body/div[2]/div[1]/div[2]/div/div/div[3]/div[2]/div[4]/div/ul/li[8]')
-                next_page.click()
-
-            if (not check_exists_class(self.__browser, "ivu-page-disabled") or more >= 0):   
-                if((check_exists_by_xpath(self.__browser, '/html/body/div[2]/div[1]/div[2]/div/div/div[3]/div[2]/div[4]/div/ul/li[7]')) and (not check_exists_by_xpath(self.__browser, '/html/body/div[2]/div[1]/div[2]/div/div/div[3]/div[2]/div[4]/div/ul/li[8]'))):
-                    next_page = self.__browser.find_element(By.XPATH, '/html/body/div[2]/div[1]/div[2]/div/div/div[3]/div[2]/div[4]/div/ul/li[7]')
-                    next_page.click()
-
-            if ((check_exists_by_xpath(self.__browser, '/html/body/div[2]/div[1]/div[2]/div/div/div[3]/div[2]/div[4]/div/ul/li[6]')) and (not check_exists_by_xpath(self.__browser, '/html/body/div[2]/div[1]/div[2]/div/div/div[3]/div[2]/div[4]/div/ul/li[7]'))):
-                next_page = self.__browser.find_element(By.XPATH, '/html/body/div[2]/div[1]/div[2]/div/div/div[3]/div[2]/div[4]/div/ul/li[6]')
-                next_page.click()
+            next_page = self.__browser.find_element(By.CLASS_NAME, 'ivu-page-next')
+            next_page.click()
             
-            if (fist):
-                more = more - 1
+
+  
+            if (check_exists_class(self.__browser, "ivu-page-disabled")):
+                stay = stay - 1 
             
             sleep(5)
 

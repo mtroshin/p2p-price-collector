@@ -6,7 +6,6 @@ from app.collector.huobi import HuobiPriceCollector
 
 if __name__ == '__main__':
     options = ChromeOptions()
-    options.binary_location='/Users/mtroshin/Private Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
     driver = Chrome(ChromeDriverManager().install(), options=options)
 
     try:
