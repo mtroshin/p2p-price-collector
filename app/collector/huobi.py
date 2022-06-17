@@ -6,6 +6,8 @@ import re
 
 
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.support.ui import WebDriverWait as wait
 from selenium.common.exceptions import NoSuchElementException
 
 from app.collector.base import Collector, Order
@@ -33,15 +35,14 @@ class HuobiPriceCollector(Collector):
     def collect(self) -> t.Iterable[Order]:
         self.__browser.get("https://c2c.huobi.com/en-us/trade/buy-btc/")
 
-        sleep(7)
-
+        element = wait(self.__browser, 10).until(ec.presence_of_element_located((By.XPATH, '/html/body/div[4]/div[2]/div/div/span/i')))
 
         """Скрытие видео"""
         if(check_exists_by_xpath(self.__browser, '/html/body/div[4]/div[2]/div/div/span/i')):
             button = self.__browser.find_element(By.XPATH, '/html/body/div[4]/div[2]/div/div/span/i')
             button.click()
-
-        sleep(5)
+        element = wait(self.__browser, 10).until(ec.presence_of_element_located((By.CLASS_NAME, 'price')))
+        sleep(1)
 
         stay = 1
 
@@ -72,6 +73,7 @@ class HuobiPriceCollector(Collector):
             """Переключение страницы"""
 
             next_page = self.__browser.find_element(By.CLASS_NAME, 'ivu-page-next')
+            element = wait(self.__browser, 10).until(ec.element_to_be_clickable((By.CLASS_NAME, 'ivu-page-next')))
             next_page.click()
             
 
