@@ -1,14 +1,19 @@
-from locale import currency
 import typing as t
+
 from time import sleep
+
+import logging
 import re
-
-
 
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 from app.collector.base import Collector, Order
+
+
+log = logging.getLogger(__name__)
 
 
 def check_exists_by_xpath(browser, xpath):
@@ -33,6 +38,8 @@ class HuobiPriceCollector(Collector):
     def collect(self) -> t.Iterable[Order]:
         self.__browser.get("https://c2c.huobi.com/en-us/trade/buy-btc/")
 
+        log.debug("Page opened")
+
         sleep(7)
 
 
@@ -41,17 +48,17 @@ class HuobiPriceCollector(Collector):
             button = self.__browser.find_element(By.XPATH, '/html/body/div[4]/div[2]/div/div/span/i')
             button.click()
 
-        sleep(5)
+        log.debug("Video skipped")
+
+        orders = WebDriverWait(self.__browser, 10).until(
+            EC.visibility_of_all_elements_located((By.CLASS_NAME, 'info-wrapper'))
+        )
+
+        log.debug("Orders loaded")
 
         stay = 1
 
-        fist = 0
-
         while (stay >= 0):
-
-            """ Считывание страницы"""
-            get_source = self.__browser.page_source
-
 
             """Поиск лимитов, цен и имен"""
             limits = self.__browser.find_elements(By.CLASS_NAME, 'limit')
@@ -60,24 +67,29 @@ class HuobiPriceCollector(Collector):
             q = len(names) - 3
             del names[:-q]
 
-            for limit, price, name in zip(limits, prices, names):
-                groups = re.search(r'((\d\,?\.?)+)-((\d\,?\.?)+)', limit.text)
-                min_limit, max_limit = groups.group(1).replace(',', ''), groups.group(3).replace(',', '')
+            for i, (limit, price, name) in enumerate(zip(limits, prices, names)):
+                try:
+                    groups = re.search(r'((\d\,?\.?)+)-((\d\,?\.?)+)', limit.text)
+                    min_limit, max_limit = groups.group(1).replace(',', ''), groups.group(3).replace(',', '')
 
-                groups = re.search(r'((\d\,?\.?)+) (\w+)', price.text)
-                price_, currency = groups.group(1).replace(',', ''), groups.group(3)
+                    groups = re.search(r'((\d\,?\.?)+) (\w+)', price.text)
+                    price_, currency = groups.group(1).replace(',', ''), groups.group(3)
 
-                yield Order(min_amount=float(min_limit), max_amount=float(max_limit), price=float(price_), currency=currency, seller_id=name.text)
+                    yield Order(min_amount=float(min_limit), max_amount=float(max_limit), price=float(price_), currency=currency, seller_id=name.text)
+
+                except Exception as e:
+                    log.error(f"Error while parsing pos {i}: limit={limit.get_attribute('innerHTML')}, price={price.get_attribute('innerHTML')}, name={name.get_attribute('innerHTML')}", exc_info=e)
 
             """Переключение страницы"""
 
-            next_page = self.__browser.find_element(By.CLASS_NAME, 'ivu-page-next')
-            next_page.click()
-            
+            next_page = WebDriverWait(self.__browser, 10).until(
+                EC.element_to_be_clickable((By.CLASS_NAME, "ivu-page-next"))
+            )
 
-  
+            next_page.click()
+
             if (check_exists_class(self.__browser, "ivu-page-disabled")):
                 stay = stay - 1 
             
-            sleep(5)
+            sleep(1)
 
