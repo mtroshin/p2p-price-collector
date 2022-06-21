@@ -2,11 +2,31 @@ services:
 
   postgres:
     image: postgres:14
+  
+  # amd64
+  # chrome-server:
+  #   image: selenium/standalone-chrome:latest
+  #   ports:
+  #     - "4444:4444"
+  #   shm_size: '2gb'
+  #   restart: always
+
+  # arm64
+  chrome-server:
+    image: seleniarm/standalone-chromium:latest
+    ports:
+      - "4444:4444"
+    shm_size: '2gb'
+    restart: always
 
   app:
     build: .
     environment:
-      A: B
-      C: D
+      COMMAND_EXECUTOR: http://chrome-server:4444/wd/hub
+      EXTENSIONS: /ext/runet-censorship-bypass.crx
+      # LOGGING_LEVEL: DEBUG
     depends_on:
-      - postgres
+      # - postgres
+      - chrome-server
+    volumes:
+      - ./ext/:/ext/:ro
