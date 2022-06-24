@@ -1,4 +1,5 @@
 import datetime as dt
+import logging
 import re
 import typing as t
 
@@ -7,6 +8,9 @@ from time import sleep
 from bs4 import BeautifulSoup
 
 from app.collector.base import Collector, Order
+
+
+log = logging.getLogger(__name__)
 
 
 class LocalbitcoinsPriceCollector(Collector):
@@ -31,6 +35,9 @@ class LocalbitcoinsPriceCollector(Collector):
         current_page = 1
         while(current_page <= total):
             self.__browser.get("https://localbitcoins.com/ru/buy-bitcoins-online/rub/?page=" + str(current_page))
+
+            log.info(f"Page {current_page} loaded")
+
             current_page = current_page + 1
             sleep(7)
             """Считывание страницы"""

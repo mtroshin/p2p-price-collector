@@ -38,7 +38,7 @@ class HuobiPriceCollector(Collector):
     def collect(self) -> t.Iterable[Order]:
         self.__browser.get("https://c2c.huobi.com/en-us/trade/buy-btc/")
 
-        log.debug("Page opened")
+        log.info("First page opened")
 
         sleep(7)
 
@@ -48,15 +48,16 @@ class HuobiPriceCollector(Collector):
             button = self.__browser.find_element(By.XPATH, '/html/body/div[4]/div[2]/div/div/span/i')
             button.click()
 
-        log.debug("Video skipped")
+        log.info("Video skipped")
 
         orders = WebDriverWait(self.__browser, 10).until(
             EC.visibility_of_all_elements_located((By.CLASS_NAME, 'info-wrapper'))
         )
 
-        log.debug("Orders loaded")
+        log.info("Orders loaded")
 
         stay = 1
+        page = 1
 
         while (stay >= 0):
 
@@ -68,6 +69,7 @@ class HuobiPriceCollector(Collector):
             del names[:-q]
 
             for i, (limit, price, name) in enumerate(zip(limits, prices, names)):
+                log.info(f"Parsing pos {i}: limit={limit.get_attribute('innerHTML')}:{limit.text}, price={price.get_attribute('innerHTML')}:{price.text}, name={name.get_attribute('innerHTML')}:{name.text}")
                 try:
                     groups = re.search(r'((\d\,?\.?)+)-((\d\,?\.?)+)', limit.text)
                     min_limit, max_limit = groups.group(1).replace(',', ''), groups.group(3).replace(',', '')
@@ -78,7 +80,7 @@ class HuobiPriceCollector(Collector):
                     yield Order(min_amount=float(min_limit), max_amount=float(max_limit), price=float(price_), currency=currency, seller_id=name.text)
 
                 except Exception as e:
-                    log.error(f"Error while parsing pos {i}: limit={limit.get_attribute('innerHTML')}, price={price.get_attribute('innerHTML')}, name={name.get_attribute('innerHTML')}", exc_info=e)
+                    log.error(f"Error while parsing pos {i}: limit={limit.get_attribute('innerHTML')}:{limit.text}, price={price.get_attribute('innerHTML')}:{price.text}, name={name.get_attribute('innerHTML')}:{name.text}", exc_info=e)
 
             """Переключение страницы"""
 
@@ -87,9 +89,12 @@ class HuobiPriceCollector(Collector):
             )
 
             next_page.click()
+            page += 1
+
+            log.info(f"Page {page} opened")
 
             if (check_exists_class(self.__browser, "ivu-page-disabled")):
                 stay = stay - 1 
             
-            sleep(1)
+            sleep(5)
 
