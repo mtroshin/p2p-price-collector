@@ -47,8 +47,14 @@ class LocalbitcoinsPriceCollector(Collector):
             prices = soup.findAll('td', class_='column-price')
             names = soup.findAll('td', class_='column-user')
             """Заброс лимитов, цен и имен в массивы"""
+            i = 0
+            banks = []
+            while i < len(names):
+                banks.append((browser.find_element(By.XPATH, '/html/body/div[4]/table/tbody/tr[' + str(i + 2) + ']/td[2]')).text)
+                i += 1
+            i = 0
 
-            for limit, price, name in zip(limits, prices, names):
+            for limit, price, name, bank in zip(limits, prices, names, banks):
                 groups = re.search(r'((\d\,?\.?)+) (\w+)', price.text)
                 price_, currency_ = groups.group(1).replace(',', ''), groups.group(3)
 
@@ -57,4 +63,4 @@ class LocalbitcoinsPriceCollector(Collector):
 
                 seller_id = name.text.replace('\n', '')
 
-                yield Order(min_amount=float(min_limit), max_amount=float(max_limit), currency=currency_, price=float(price_), seller_id=seller_id)
+                yield Order(min_amount=float(min_limit), max_amount=float(max_limit), currency=currency_, price=float(price_), seller_id=seller_id, bank = bank.text)
