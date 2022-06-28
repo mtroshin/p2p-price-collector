@@ -51,7 +51,7 @@ class LocalbitcoinsPriceCollector(Collector):
             i = 0
             banks = []
             while i < len(names):
-                banks.append((self.__browser.find_element((By.XPATH, '/html/body/div[4]/table/tbody/tr[' + str(i + 2) + ']/td[2]'))).text)
+                banks.append((self.__browser.find_element(By.XPATH, '/html/body/div[4]/table/tbody/tr[' + str(i + 2) + ']/td[2]')))
                 i += 1
             i = 0
 
