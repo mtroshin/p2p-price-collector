@@ -61,6 +61,13 @@ class HuobiPriceCollector(Collector):
 
         stay = 1
         page = 1
+        sdvig = 1
+        n = 0
+        m = 0
+        j = 2
+        i = 0
+        q = 0      
+        payment_c = []        
 
         while (stay >= 0):
 
@@ -68,10 +75,37 @@ class HuobiPriceCollector(Collector):
             limits = self.__browser.find_elements(By.CLASS_NAME, 'limit')
             prices = self.__browser.find_elements(By.CLASS_NAME, 'price')
             names = self.__browser.find_elements(By.CLASS_NAME, 'font14')
+            payments = self.__browser.find_elements(By.CLASS_NAME, 'width190')
+            payment = self.__browser.find_elements(By.CLASS_NAME, 'payment-block')
             q = len(names) - 3
             del names[:-q]
+            q = 1	
+            while (j <= ((len(prices) - 1) * 2) + 2):
+                for a in payments[j].text:
+                    if (payments[j].text[i] == '\n'):
+                    	q = q + 1
+                    i = i + 1
+                j = j + 2
+                i = 0
+                payment_c.append(q)
+                q = 1
+            fif = len(names)
+            while m < fif:
+                while n < (payment_c[m] - 1):
+                    limits.insert(m + sdvig, limits[m + sdvig - 1])
+                    prices.insert(m + sdvig, prices[m + sdvig - 1])
+                    names.insert(m + sdvig, names[m + sdvig - 1])
+                    n = n + 1
+                    sdvig = sdvig + 1
+                n = 0
+                m += 1
+            payment_c = []
+            m = 0
+            sdvig = 1
+            j = 2
 
-            for i, (limit, price, name) in enumerate(zip(limits, prices, names)):
+
+            for i, (limit, price, name, bank) in enumerate(zip(limits, prices, names, payment)):
                 log.info(f"Parsing pos {i}: limit={limit.get_attribute('innerHTML')}:{limit.text}, price={price.get_attribute('innerHTML')}:{price.text}, name={name.get_attribute('innerHTML')}:{name.text}")
                 try:
                     groups = re.search(r'((\d\,?\.?)+)-((\d\,?\.?)+)', limit.text)
@@ -80,7 +114,7 @@ class HuobiPriceCollector(Collector):
                     groups = re.search(r'((\d\,?\.?)+) (\w+)', price.text)
                     price_, currency = groups.group(1).replace(',', ''), groups.group(3)
 
-                    yield Order(min_amount=float(min_limit), max_amount=float(max_limit), price=float(price_), currency=currency, seller_id=name.text)
+                    yield Order(min_amount=float(min_limit), max_amount=float(max_limit), price=float(price_), currency=currency, seller_id=name.text, bank = bank.text)
 
                 except Exception as e:
                     log.error(f"Error while parsing pos {i}: limit={limit.get_attribute('innerHTML')}:{limit.text}, price={price.get_attribute('innerHTML')}:{price.text}, name={name.get_attribute('innerHTML')}:{name.text}", exc_info=e)
@@ -96,6 +130,6 @@ class HuobiPriceCollector(Collector):
 
             if (check_exists_class(self.__browser, "ivu-page-disabled")):
                 stay = stay - 1 
-            
+            i = 0      
             sleep(5)
 
