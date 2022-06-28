@@ -6,6 +6,7 @@ import typing as t
 from time import sleep
 
 from bs4 import BeautifulSoup
+from selenium.webdriver.common.by import By
 
 from app.collector.base import Collector, Order
 
@@ -50,7 +51,7 @@ class LocalbitcoinsPriceCollector(Collector):
             i = 0
             banks = []
             while i < len(names):
-                banks.append((browser.find_element(By.XPATH, '/html/body/div[4]/table/tbody/tr[' + str(i + 2) + ']/td[2]')).text)
+                banks.append((self.__browser.find_element((By.XPATH, '/html/body/div[4]/table/tbody/tr[' + str(i + 2) + ']/td[2]'))).text)
                 i += 1
             i = 0
 
