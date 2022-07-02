@@ -55,8 +55,10 @@ class HuobiPriceCollector(Collector):
         bitki = self.__browser.find_elements(By.CLASS_NAME, 'font16')
         bitok = bitki[4]
         bitok.click()
+        sleep(1)
         bitok = bitki[5]
         bitok.click()
+        sleep(1)
         stay = 1
 
         orders = WebDriverWait(self.__browser, 10).until(
@@ -129,7 +131,6 @@ class HuobiPriceCollector(Collector):
             """Переключение страницы"""
             self.__browser.execute_script("document.body.style.zoom='100%'")
             next_page = self.__browser.find_element(By.CLASS_NAME, 'ivu-page-next').click()
-            yield next_page
 
             page += 1
             log.info(f"Page {page} opened")
