@@ -58,7 +58,7 @@ if __name__ == '__main__':
             j = 0
             for i in orders:
                 with connection.cursor() as cursor:
-                    cursor.execute("INSERT INTO bits VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", (tss, 'local', orders[j][0], orders[j][1], orders[j][3], orders[j][2], orders[j][4], orders[j][5]))
+                    cursor.execute("INSERT INTO bits VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", (tss, 'huobi', orders[j][0], orders[j][1], orders[j][3], orders[j][2], orders[j][4], orders[j][5]))
                     j += 1
             j = 0
             i = 0
