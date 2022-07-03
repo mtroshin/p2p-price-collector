@@ -4,6 +4,8 @@ services:
     image: postgres:14
     environment:
       POSTGRES_PASSWORD: postgres
+      # fixes bug in psycopg2 on m1 cpu https://stackoverflow.com/a/67482847
+      POSTGRES_HOST_AUTH_METHOD: md5
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
   
