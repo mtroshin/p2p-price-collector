@@ -20,8 +20,6 @@ services:
   # arm64
   chrome-server:
     image: seleniarm/standalone-chromium:latest
-    ports:
-      - "4444:4444"
     shm_size: '3gb'
     restart: always
 
