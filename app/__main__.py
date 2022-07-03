@@ -1,9 +1,8 @@
 import datetime
 import logging
-from multiprocessing.sharedctypes import Value
 import os
 
-
+import psycopg2
 
 from selenium.webdriver import ChromeOptions, Remote
 
