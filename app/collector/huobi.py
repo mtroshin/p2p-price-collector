@@ -92,7 +92,7 @@ class HuobiPriceCollector(Collector):
             while (j <= ((len(prices) - 1) * 2) + 2):
                 for a in payments[j].text:
                     if (payments[j].text[i] == '\n'):
-                    	q = q + 1
+                        q = q + 1
                     i = i + 1
                 j = j + 2
                 i = 0
