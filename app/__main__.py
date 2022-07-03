@@ -82,7 +82,7 @@ if __name__ == '__main__':
     try:
             collector = LocalbitcoinsPriceCollector(driver)
             orders = list(collector.collect())
-            log.info("[job started at %s] Got %d orders for localbitcoins", t, len(orders))
+            log.info("[job started at %s] Got %d orders from localbitcoins", t, len(orders))
 
             with db_conn.cursor() as cursor:
                 for order in orders:
@@ -93,7 +93,7 @@ if __name__ == '__main__':
 
             collector = HuobiPriceCollector(driver)
             orders = list(collector.collect())
-            log.info("[job started at %s] Got %d orders for huobi", t, len(orders))
+            log.info("[job started at %s] Got %d orders from huobi", t, len(orders))
 
             with db_conn.cursor() as cursor:
                 for order in orders:
