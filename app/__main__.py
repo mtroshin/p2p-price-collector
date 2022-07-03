@@ -49,7 +49,7 @@ def create_db_conn():
         except psycopg2.OperationalError as e:
             connection = None
             time_to_sleep_before_retry = 2 ** (i + 1)
-            log.error("Error connecting to DB, try #%d, sleeping %d seconds", (i, time_to_sleep_before_retry), exc_info=e)
+            log.error("Error connecting to DB, try #%d, sleeping %d seconds", i + 1, time_to_sleep_before_retry, exc_info=e)
             time.sleep(time_to_sleep_before_retry)
 
     if not connection:
