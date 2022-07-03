@@ -69,32 +69,37 @@ def create_db_conn():
                 seller_id VARCHAR);"""
         )
 
+    return connection
+
+
 if __name__ == '__main__':
     logging.basicConfig(level=getattr(logging, os.getenv("LOGGING_LEVEL", "info").upper()))
     
-    t = datetime.datetime.now().timestamp()
+    t = datetime.datetime.now()
 
     driver = create_driver()
     db_conn = create_db_conn()
     try:
             collector = LocalbitcoinsPriceCollector(driver)
             orders = list(collector.collect())
+            log.info("[job started at %s] Got %d orders for localbitcoins", t, len(orders))
 
             with db_conn.cursor() as cursor:
                 for order in orders:
                     cursor.execute(
                         "INSERT INTO bits VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", 
-                        (t, 'local', order.min_amount, order.max_amount, order.price, order.currency, order.bank, order.seller_id)
+                        (t.timestamp(), 'local', order.min_amount, order.max_amount, order.price, order.currency, order.bank, order.seller_id)
                     )
 
             collector = HuobiPriceCollector(driver)
             orders = list(collector.collect())
+            log.info("[job started at %s] Got %d orders for huobi", t, len(orders))
 
             with db_conn.cursor() as cursor:
                 for order in orders:
                     cursor.execute(
                         "INSERT INTO bits VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", 
-                        (t, 'huobi', order.min_amount, order.max_amount, order.price, order.currency, order.bank, order.seller_id)
+                        (t.timestamp(), 'huobi', order.min_amount, order.max_amount, order.price, order.currency, order.bank, order.seller_id)
                     )
 
     finally:        
