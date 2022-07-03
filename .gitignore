@@ -3,3 +3,9 @@ __pycache__/
 .python-version
 
 postgres-data/
+
+logs/
+
+run.sh
+
+.DS_Store
