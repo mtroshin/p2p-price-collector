@@ -1,6 +1,7 @@
 import datetime
 import logging
 import os
+import time
 
 import psycopg2
 
@@ -8,6 +9,9 @@ from selenium.webdriver import ChromeOptions, Remote
 
 from app.collector.huobi import HuobiPriceCollector
 from app.collector.localbitcoins import LocalbitcoinsPriceCollector
+
+
+log = logging.getLogger(__name__)
 
 
 def create_driver():
@@ -32,13 +36,24 @@ def create_db_conn():
     if not host or not user or not password:
         raise ValueError("DB_HOST, DB_USER, DB_PASSWORD are required for start")
 
-    connection = psycopg2.connect(
-        host=host,
-        user=user,
-        password=password,
-        database=database,
-        port=port,
-    )
+    connection = None
+    for i in range(5):
+        try:
+            connection = psycopg2.connect(
+                host=host,
+                user=user,
+                password=password,
+                database=database,
+                port=port,
+            )
+        except psycopg2.OperationalError as e:
+            connection = None
+            time_to_sleep_before_retry = 2 ** (i + 1)
+            log.error("Error connecting to DB, try #%d, sleeping %d seconds", (i, time_to_sleep_before_retry), exc_info=e)
+            time.sleep(time_to_sleep_before_retry)
+
+    if not connection:
+        raise RuntimeError("Could not connect to database")
 
     connection.autocommit = True
     with connection.cursor() as cursor:
