@@ -2,6 +2,10 @@ services:
 
   postgres:
     image: postgres:14
+    environment:
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
   
   # amd64
   # chrome-server:
@@ -25,8 +29,11 @@ services:
       COMMAND_EXECUTOR: http://chrome-server:4444/wd/hub
       EXTENSIONS: /ext/runet-censorship-bypass.crx
       LOGGING_LEVEL: INFO
+      DB_HOST: postgres
+      DB_USER: postgres
+      DB_PASSWORD: postgres
     depends_on:
-      # - postgres
+      - postgres
       - chrome-server
     volumes:
       - ./ext/:/ext/:ro
