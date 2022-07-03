@@ -36,21 +36,29 @@ def check_exists_class(browser, classs):
 class HuobiPriceCollector(Collector):
     def __init__(self, browser) -> None:
         self.__browser = browser
-
     def collect(self) -> t.Iterable[Order]:
         self.__browser.get("https://c2c.huobi.com/en-us/trade/buy-btc/")
-
-        element = wait(self.__browser, 10).until(ec.presence_of_element_located((By.XPATH, '/html/body/div[4]/div[2]/div/div/span/i')))
-
+        self.__browser.execute_script("window.open()")
+        sleep(3)
+        self.__browser.switch_to.window(self.__browser.window_handles[0])
+	
+        element = wait(self.__browser, 100).until(ec.presence_of_element_located((By.XPATH, '/html/body/div[4]/div[2]/div/div/span/i')))
+	
         """Скрытие видео"""
         if(check_exists_by_xpath(self.__browser, '/html/body/div[4]/div[2]/div/div/span/i')):
             button = self.__browser.find_element(By.XPATH, '/html/body/div[4]/div[2]/div/div/span/i')
             button.click()
 
         log.info("Video skipped")
-        element = wait(self.__browser, 10).until(ec.presence_of_element_located((By.CLASS_NAME, 'price')))
+        element = wait(self.__browser, 100).until(ec.presence_of_element_located((By.CLASS_NAME, 'price')))
         sleep(1)
-
+        bitki = self.__browser.find_elements(By.CLASS_NAME, 'font16')
+        bitok = bitki[4]
+        bitok.click()
+        sleep(1)
+        bitok = bitki[5]
+        bitok.click()
+        sleep(1)
         stay = 1
 
         orders = WebDriverWait(self.__browser, 10).until(
@@ -58,7 +66,7 @@ class HuobiPriceCollector(Collector):
         )
 
         log.info("Orders loaded")
-
+	
         stay = 1
         page = 1
         sdvig = 1
@@ -70,7 +78,8 @@ class HuobiPriceCollector(Collector):
         payment_c = []        
 
         while (stay >= 0):
-
+            self.__browser.execute_script("document.body.style.zoom='50%'")
+            self.__browser.execute_script("window.scrollTo(0, 0);")
             """Поиск лимитов, цен и имен"""
             limits = self.__browser.find_elements(By.CLASS_NAME, 'limit')
             prices = self.__browser.find_elements(By.CLASS_NAME, 'price')
@@ -120,16 +129,14 @@ class HuobiPriceCollector(Collector):
                     log.error(f"Error while parsing pos {i}: limit={limit.get_attribute('innerHTML')}:{limit.text}, price={price.get_attribute('innerHTML')}:{price.text}, name={name.get_attribute('innerHTML')}:{name.text}", exc_info=e)
 
             """Переключение страницы"""
+            self.__browser.execute_script("document.body.style.zoom='100%'")
+            next_page = self.__browser.find_element(By.CLASS_NAME, 'ivu-page-next').click()
 
-            next_page = self.__browser.find_element(By.CLASS_NAME, 'ivu-page-next')
-            element = wait(self.__browser, 10).until(ec.element_to_be_clickable((By.CLASS_NAME, 'ivu-page-next')))
-            next_page.click()
             page += 1
-
             log.info(f"Page {page} opened")
 
             if (check_exists_class(self.__browser, "ivu-page-disabled")):
                 stay = stay - 1 
             i = 0      
-            sleep(5)
+            sleep(3)
 
