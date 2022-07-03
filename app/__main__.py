@@ -6,7 +6,6 @@ import os
 
 
 from selenium.webdriver import ChromeOptions, Remote
-from app.config import host, user, password, db_name
 
 from app.collector.huobi import HuobiPriceCollector
 from app.collector.localbitcoins import LocalbitcoinsPriceCollector
