@@ -62,7 +62,7 @@ def create_db_conn():
         cursor.execute(
             """CREATE TABLE IF NOT EXISTS bits (
                 ts INTEGER,
-                sellorbuy VARCHAR(255)
+                sellorbuy VARCHAR(255),
                 exchange VARCHAR(255),
                 min_amount INTEGER NOT NULL,
                 max_amount INTEGER NOT NULL,
