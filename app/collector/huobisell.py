@@ -42,12 +42,7 @@ class HuobiPriceCollectorS(Collector):
         sleep(3)
         self.__browser.switch_to.window(self.__browser.window_handles[0])
 	
-        element = wait(self.__browser, 100).until(ec.presence_of_element_located((By.XPATH, '/html/body/div[4]/div[2]/div/div/span/i')))
-	
-        """Скрытие видео"""
-        if(check_exists_by_xpath(self.__browser, '/html/body/div[4]/div[2]/div/div/span/i')):
-            button = self.__browser.find_element(By.XPATH, '/html/body/div[4]/div[2]/div/div/span/i')
-            button.click()
+
 
         log.info("Video skipped")
         element = wait(self.__browser, 100).until(ec.presence_of_element_located((By.CLASS_NAME, 'price')))
