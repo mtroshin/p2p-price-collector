@@ -9,6 +9,8 @@ from selenium.webdriver import ChromeOptions, Remote
 
 from app.collector.huobi import HuobiPriceCollector
 from app.collector.localbitcoins import LocalbitcoinsPriceCollector
+from app.collector.localbitcoinssell import LocalbitcoinsPriceCollectorS
+from app.collector.huobisell import HuobiPriceCollectorS
 
 
 log = logging.getLogger(__name__)
@@ -60,6 +62,7 @@ def create_db_conn():
         cursor.execute(
             """CREATE TABLE IF NOT EXISTS bits (
                 ts INTEGER,
+                sellorbuy VARCHAR(255)
                 exchange VARCHAR(255),
                 min_amount INTEGER NOT NULL,
                 max_amount INTEGER NOT NULL,
@@ -87,8 +90,8 @@ if __name__ == '__main__':
             with db_conn.cursor() as cursor:
                 for order in orders:
                     cursor.execute(
-                        "INSERT INTO bits VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", 
-                        (t.timestamp(), 'local', order.min_amount, order.max_amount, order.price, order.currency, order.bank, order.seller_id)
+                        "INSERT INTO bits VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)", 
+                        (t.timestamp(), 'Buy', 'local', order.min_amount, order.max_amount, order.price, order.currency, order.bank, order.seller_id)
                     )
 
             collector = HuobiPriceCollector(driver)
@@ -98,8 +101,30 @@ if __name__ == '__main__':
             with db_conn.cursor() as cursor:
                 for order in orders:
                     cursor.execute(
-                        "INSERT INTO bits VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", 
-                        (t.timestamp(), 'huobi', order.min_amount, order.max_amount, order.price, order.currency, order.bank, order.seller_id)
+                        "INSERT INTO bits VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)", 
+                        (t.timestamp(), 'Buy', 'huobi', order.min_amount, order.max_amount, order.price, order.currency, order.bank, order.seller_id)
+                    )
+
+            collector = HuobiPriceCollectorS(driver)
+            orders = list(collector.collect())
+            log.info("[job started at %s] Got %d orders from huobi", t, len(orders))
+
+            with db_conn.cursor() as cursor:
+                for order in orders:
+                    cursor.execute(
+                        "INSERT INTO bits VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)", 
+                        (t.timestamp(), 'Sell', 'huobi', order.min_amount, order.max_amount, order.price, order.currency, order.bank, order.seller_id)
+                    )
+            
+            collector = LocalbitcoinsPriceCollectorS(driver)
+            orders = list(collector.collect())
+            log.info("[job started at %s] Got %d orders from localbitcoins", t, len(orders))
+
+            with db_conn.cursor() as cursor:
+                for order in orders:
+                    cursor.execute(
+                        "INSERT INTO bits VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)", 
+                        (t.timestamp(), 'Sell', 'local', order.min_amount, order.max_amount, order.price, order.currency, order.bank, order.seller_id)
                     )
 
     finally:        
