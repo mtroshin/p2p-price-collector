@@ -55,11 +55,17 @@ class LocalbitcoinsPriceCollectorS(Collector):
                 i += 1
             i = 0
 
-            for limit, price, name, bank in zip(limits, prices, names, banks):
+            for i, (limit, price, name, bank) in enumerate(zip(limits, prices, names, banks)):
+                log.info(f"Parsing pos {i}: limit={limit}, price={price}, name={name}, bank={bank}")
+
                 groups = re.search(r'((\d\,?\.?)+) (\w+)', price.text)
+                if not groups:
+                    continue
                 price_, currency_ = groups.group(1).replace(',', ''), groups.group(3)
 
                 groups = re.search(r'((\d\,?\.?)+) - ((\d\,?\.?)+)', limit.text)
+                if not groups:
+                    continue
                 min_limit, max_limit = groups.group(1).replace(',', ''), groups.group(3).replace(',', '')
 
                 seller_id = name.text.replace('\n', '')
